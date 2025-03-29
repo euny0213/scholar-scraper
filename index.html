@@ -182,19 +182,17 @@
             showStatus('searchStatus', '검색 결과를 스크래핑 중입니다...', 'info');
             document.getElementById('copyBtn').disabled = true;
             
-            try {
-                // 실제 구현에서는 서버로 요청을 보내 스크래핑을 수행해야 함
-                // 클라이언트 측에서는 CORS 정책으로 인해 직접 스크래핑이 불가능
-                // 아래는 예시 코드로, 서버 측 구현이 필요함
-                
-                // 서버 API 호출 가정 
-                // const response = await axios.get('/api/scrape', {
-                //     params: { keyword, pages }
-                // });
-                // searchResults = response.data;
-                
-                // 현재는 예시 데이터 생성
-                searchResults = mockSearchResults(keyword, pages);
+try {
+    const response = await axios.get('https://glitch.com/edit/#!/smoggy-mangrove-minibus', {
+        params: { keyword, pages }
+    });
+    searchResults = response.data;
+} catch (error) {
+    console.error('서버 연결 실패:', error);
+    // 서버 연결 실패 시 예시 데이터 사용
+    searchResults = mockSearchResults(keyword, pages);
+    showStatus('searchStatus', '서버 연결에 실패하여 예시 데이터를 표시합니다.', 'error');
+}
                 
                 displaySearchResults(searchResults);
                 document.getElementById('copyBtn').disabled = false;

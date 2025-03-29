@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구글 스칼라 검색 결과 스크래퍼</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #4285f4;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: none;
+            height: 300px;
+            font-family: inherit;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2b76e5;
+        }
+        button#copyBtn {
+            background-color: #34a853;
+            margin-top: 10px;
+        }
+        button#copyBtn:hover {
+            background-color: #2d9249;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .results {
+            height: 350px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .results h3 {
+            margin-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-count {
+            font-size: 14px;
+            color: #666;
+        }
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.info {
+            background-color: #e8f0fe;
+            color: #4285f4;
+        }
+        .status.success {
+            background-color: #e6f4ea;
+            color: #137333;
+        }
+        .status.error {
+            background-color: #fce8e6;
+            color: #c5221f;
+        }
+        .hidden {
+            display: none;
+        }
+        .search-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>구글 스칼라 검색 결과 스크래퍼</h1>
+        
+        <div class="form-group">
+            <label for="keyword">학술 검색 키워드</label>
+            <input type="text" id="keyword" placeholder="검색하고자 하는 학술 키워드를 입력하세요">
+        </div>
+        
+        <div class="search-container">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="pages">검색할 페이지 수 (최대 200)</label>
+                <input type="number" id="pages" min="1" max="200" value="10">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
+                <button id="searchBtn">논문검색</button>
+            </div>
+        </div>
+        
+        <div id="searchStatus" class="status info hidden"></div>
+        
+        <div class="results" id="searchResults">
+            <h3>
+                검색 결과
+                <span class="result-count" id="resultCount"></span>
+            </h3>
+            <div id="resultsList"></div>
+        </div>
+        
+        <div class="form-group" style="margin-top: 20px;">
+            <button id="copyBtn" disabled>검색 결과 복사하기</button>
+        </div>
+    </div>
+
+    <script>
+        // 변수 초기화
+        let searchResults = [];
+        
+        // 검색 결과 스크래핑 기능
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const keyword = document.getElementById('keyword').value.trim();
+            const pages = parseInt(document.getElementById('pages').value);
+            
+            if (!keyword) {
+                showStatus('searchStatus', '검색 키워드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            if (isNaN(pages) || pages < 1 || pages > 200) {
+                showStatus('searchStatus', '유효한 페이지 수를 입력해주세요 (1-200).', 'error');
+                return;
+            }
+            
+            showStatus('searchStatus', '검색 결과를 스크래핑 중입니다...', 'info');
+            document.getElementById('copyBtn').disabled = true;
+            
+            try {
+                // 실제 구현에서는 서버로 요청을 보내 스크래핑을 수행해야 함
+                // 클라이언트 측에서는 CORS 정책으로 인해 직접 스크래핑이 불가능
+                // 아래는 예시 코드로, 서버 측 구현이 필요함
+                
+                // 서버 API 호출 가정 
+                // const response = await axios.get('/api/scrape', {
+                //     params: { keyword, pages }
+                // });
+                // searchResults = response.data;
+                
+                // 현재는 예시 데이터 생성
+                searchResults = mockSearchResults(keyword, pages);
+                
+                displaySearchResults(searchResults);
+                document.getElementById('copyBtn').disabled = false;
+                showStatus('searchStatus', `${searchResults.length}개의 검색 결과를 찾았습니다.`, 'success');
+            } catch (error) {
+                showStatus('searchStatus', `오류 발생: ${error.message}`, 'error');
+                console.error('스크래핑 오류:', error);
+            }
+        });
+        
+        // 클립보드 복사 기능
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            if (searchResults.length === 0) {
+                showStatus('searchStatus', '복사할 검색 결과가 없습니다.', 'error');
+                return;
+            }
+            
+            try {
+                // 검색 결과를 텍스트로 변환
+                const resultText = searchResults.map((result, index) => {
+                    return `${index + 1}. ${result.title}\n${result.authors || ''}\n${result.url}\n`;
+                }).join('\n');
+                
+                // 클립보드에 복사
+                navigator.clipboard.writeText(resultText).then(() => {
+                    showStatus('searchStatus', '검색 결과가 클립보드에 복사되었습니다.', 'success');
+                }, () => {
+                    // 브라우저에서 clipboard API를 지원하지 않는 경우 대체 방법
+                    const textarea = document.createElement('textarea');
+                    textarea.value = resultText;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showStatus('searchStatus', '검색 결과가 클립보드에 복사되었습니다.', 'success');
+                });
+            } catch (error) {
+                showStatus('searchStatus', `복사 중 오류 발생: ${error.message}`, 'error');
+                console.error('클립보드 복사 오류:', error);
+            }
+        });
+        
+        // 상태 메시지 표시 함수
+        function showStatus(elementId, message, type) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+            statusElement.classList.remove('hidden');
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusElement.classList.add('hidden');
+                }, 5000);
+            }
+        }
+        
+        // 검색 결과 표시 함수
+        function displaySearchResults(results) {
+            const resultsContainer = document.getElementById('searchResults');
+            const resultsList = document.getElementById('resultsList');
+            const resultCount = document.getElementById('resultCount');
+            
+            resultsList.innerHTML = '';
+            resultCount.textContent = `(총 ${results.length}개)`;
+            
+            results.forEach((result, index) => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.innerHTML = `
+                    <strong>${index + 1}.</strong> ${result.title}
+                    <div><small class="text-secondary">${result.authors || ''}</small></div>
+                    <div><small>${result.url}</small></div>
+                `;
+                resultsList.appendChild(item);
+            });
+        }
+        
+        // 검색 결과창 수정 이벤트
+        document.getElementById('searchQuery').addEventListener('input', function() {
+            // 검색 결과창에 내용이 있으면 복사 버튼 활성화
+            document.getElementById('copyBtn').disabled = this.value.trim() === '';
+        });
+        
+        // 목업 검색 결과 생성 함수 (실제 구현에서는 서버에서 스크래핑한 결과로 대체)
+        function mockSearchResults(keyword, pages) {
+            const results = [];
+            const count = Math.min(pages * 10, 200 * 10); // 최대 200페이지, 페이지당 10결과
+            
+            for (let i = 0; i < count; i++) {
+                results.push({
+                    title: `${keyword}에 관한 학술 논문 #${i + 1} - 예시 논문 제목입니다`,
+                    url: `https://example.org/paper${i + 1}?q=${encodeURIComponent(keyword)}`,
+                    authors: `홍길동, 김철수, 이영희 - 한국대학교, 2023 - scholar.google.com`
+                });
+            }
+            
+            return results;
+        }
+    </script>
+</body>
+</html>
